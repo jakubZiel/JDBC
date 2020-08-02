@@ -12,37 +12,41 @@ public class Client {
     private Socket connectionSocket = null;
     private DataInputStream dataInputS;
     private DataOutputStream dataOutputS;
-    private int PortNumb = 5055;
+    private int PortNumb = 6969;
     private String ipAddress;
     private boolean StopApp = false;
     public User myUser;
     public String UserRequest;
     public ArrayList<String> requestResource = new ArrayList<>();
 
+    public Client(String ip) {
+
+        ipAddress = new String(ip);
+        executeClient();
+    }
+
     //this function run everything
     public  void  executeClient(){
+
         connectToServerSocket();
         Scanner sc = new Scanner(System.in);
 
         while(!StopApp) {
 
-            setUserRequest("select * from branch");
+            setUserRequest("select b_id fr111om branch");
+
             sendRequestToHandler();
             getResourceFromHandler();
 
             printReceivedResource();
             clearBufferedResource();
+
             StopApp = sc.nextBoolean();
         }
         closeConnection();
     }
 
-    public Client(String ip) {
-
-        ipAddress = new String(ip);
-    }
-
-    //worker methods
+    //major methods
 
     public  void connectToServerSocket(){
 
@@ -57,6 +61,10 @@ public class Client {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void setUserRequest(String userRequest) {
+        UserRequest = userRequest;
     }
 
     public void sendRequestToHandler(){
@@ -79,6 +87,15 @@ public class Client {
         }
     }
 
+    public void printReceivedResource(){
+        for(String s : requestResource) System.out.println(s);
+    }
+
+    public  void clearBufferedResource(){
+        requestResource.clear();
+        System.out.println("Ready for a new resource");
+    }
+
     public void closeConnection(){
         try {
             dataOutputS.close();
@@ -91,24 +108,14 @@ public class Client {
 
     }
 
-    public void setUserRequest(String userRequest) {
-        UserRequest = userRequest;
-    }
+    //worker methods
 
-    public void printReceivedResource(){
-        for(String s : requestResource) System.out.println(s);
-    }
-
-    public  void clearBufferedResource(){
-        requestResource.clear();
-        System.out.println("Ready for a new resource");
-    }
     public static void main(String[] args) {
 
         Scanner sc = new Scanner(System.in);
         int i = sc.nextInt();
 
         Client cl = new Client("127.0.0.1");
-        cl.executeClient();
+
     }
 }

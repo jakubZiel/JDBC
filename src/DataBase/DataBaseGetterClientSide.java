@@ -13,6 +13,8 @@ public class DataBaseGetterClientSide {
         setConnectionToDataBase();
     }
 
+    //major methods
+
     public void setConnectionToDataBase(){
 
         String host = "jdbc:mysql://localhost:3306/mybase?useSSL=false";
@@ -34,6 +36,8 @@ public class DataBaseGetterClientSide {
             e.printStackTrace();
         }
     }
+
+    //worker methods
 
     public Connection getConnectionToDataBase(){
         return connectionToDataBase;

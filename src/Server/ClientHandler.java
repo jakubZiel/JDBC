@@ -22,9 +22,10 @@ public class ClientHandler extends Thread {
     Lock lock;
     String SqlRequest;
     ResultSet resultSet;
-
+    String exceptionMessage;
     boolean HandlerOpen = true;
-    //this method run everything
+
+    //this method runs everything
 
     public void run(){
 
@@ -36,8 +37,6 @@ public class ClientHandler extends Thread {
         closeConnection();
     }
 
-    //worker methods
-
     public ClientHandler(DataInputStream dis, DataOutputStream dos, Socket connectionSocketPara, Lock cLock, DataBaseGetterClientSide DataBase){
         dataInputS = dis;
         dataOutputS = dos;
@@ -46,15 +45,7 @@ public class ClientHandler extends Thread {
         DataBaseRef = DataBase;
     }
 
-    public void sleepFor2000ms() {
-        try {
-            sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-
-        }
-
-    }
+    //major methods
 
     public void getClientsRequest(){
 
@@ -74,27 +65,19 @@ public class ClientHandler extends Thread {
                     resultSet = statement.executeQuery(SqlRequest);
                 }
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println(e.getMessage());
+                exceptionMessage = e.getMessage();
+                resultSet = null;
             }
     }
 
     public void sendResultToClient(){
 
-         StringBuffer rowInformation = new StringBuffer();
          try {
-                ResultSetMetaData metaData = resultSet.getMetaData();
-                int columns = metaData.getColumnCount();
-
                 synchronized (connectionSocket) {
-                    while (resultSet.next()) {
 
-                        for (int i = 1; i <= columns; i++) {
-                            rowInformation.append(resultSet.getString(i));
-                            rowInformation.append("####");
-                        }
-                        dataOutputS.writeUTF(new String(rowInformation));
-                        rowInformation.delete(0, rowInformation.length() - 1);
-                    }
+                    if(resultSet != null) sendDataThroughSocket();    //throws SQLException, IOException
+                    else dataOutputS.writeUTF(exceptionMessage);
 
                     dataOutputS.writeUTF("EndOfTransmission");
                 }
@@ -112,4 +95,35 @@ public class ClientHandler extends Thread {
             e.printStackTrace();
         }
     }
+
+    //worker methods
+
+    public void sendDataThroughSocket() throws SQLException, IOException {
+
+        StringBuffer rowInformation = new StringBuffer();
+        ResultSetMetaData metaData = resultSet.getMetaData();
+        int columns = metaData.getColumnCount();
+
+        while (resultSet.next()) {
+
+            for (int i = 1; i <= columns; i++) {
+                rowInformation.append(resultSet.getString(i));
+                rowInformation.append("###");
+            }
+            dataOutputS.writeUTF(new String(rowInformation));
+            rowInformation.delete(0, rowInformation.length());
+        }
+
+    }
+
+    public void sleepFor2000ms() {
+        try {
+            sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+
+        }
+
+    }
+
 }

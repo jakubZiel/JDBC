@@ -20,12 +20,13 @@ public class ServerManager {
     boolean StopServer = false;
 
     public ServerManager(int port){
-
         setServerToListenToPort(port);
         assignClientHandlersToClients();
+        closeServerManager();
     }
 
-    //server management
+    //major methods
+
     public void setServerToListenToPort(int port){
         try {
             socketHearing = new ServerSocket(port);
@@ -62,6 +63,18 @@ public class ServerManager {
         System.out.println("Server Application Terminated");
     }
 
+    public  void closeServerManager(){
+        try {
+            connectionSocket.close();
+            DataBase.closeConnectionToDataBase();
+            socketHearing.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //worker methods
+
     public void CreateClientHandler(){
 
         try {
@@ -94,7 +107,7 @@ public class ServerManager {
 
     public static void main(String[] args) {
 
-        ServerManager serverManager = new ServerManager(5055);
+        ServerManager serverManager = new ServerManager(6969);
     }
 
 }
