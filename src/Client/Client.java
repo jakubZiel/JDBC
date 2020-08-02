@@ -23,7 +23,7 @@ public class Client {
     public  void  executeClient(){
         connectToServerSocket();
         Scanner sc = new Scanner(System.in);
-        sc.next();
+
         while(!StopApp) {
 
             setUserRequest("select * from branch");

@@ -23,15 +23,17 @@ public class ClientHandler extends Thread {
     String SqlRequest;
     ResultSet resultSet;
 
+    boolean HandlerOpen = true;
     //this method run everything
 
     public void run(){
 
-        while(true) {
+        while(HandlerOpen) {
             getClientsRequest();
             askDataBase();
             sendResultToClient();
         }
+        closeConnection();
     }
 
     //worker methods
@@ -56,44 +58,46 @@ public class ClientHandler extends Thread {
 
     public void getClientsRequest(){
 
-        System.out.println("get c r" + currentThread());
             try {
-                SqlRequest = dataInputS.readUTF();
+                synchronized (connectionSocket) {
+                    SqlRequest = dataInputS.readUTF();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
     }
 
     public void askDataBase(){
-        System.out.println("get a d");
             try {
-                Statement statement = DataBaseRef.connectionToDataBase.createStatement();
-                resultSet = statement.executeQuery(SqlRequest);
-
+                synchronized (DataBaseRef) {
+                    Statement statement = DataBaseRef.connectionToDataBase.createStatement();
+                    resultSet = statement.executeQuery(SqlRequest);
+                }
             } catch (SQLException e) {
                 e.printStackTrace();
             }
     }
 
     public void sendResultToClient(){
-        System.out.println("get s request");
-        StringBuffer rowInformation = new StringBuffer();
+
+         StringBuffer rowInformation = new StringBuffer();
          try {
                 ResultSetMetaData metaData = resultSet.getMetaData();
                 int columns = metaData.getColumnCount();
 
-                while (resultSet.next()) {
+                synchronized (connectionSocket) {
+                    while (resultSet.next()) {
 
-                    for (int i = 1; i <= columns; i++) {
-                        rowInformation.append(resultSet.getString(i));
-                        rowInformation.append("####");
+                        for (int i = 1; i <= columns; i++) {
+                            rowInformation.append(resultSet.getString(i));
+                            rowInformation.append("####");
+                        }
+                        dataOutputS.writeUTF(new String(rowInformation));
+                        rowInformation.delete(0, rowInformation.length() - 1);
                     }
-                    dataOutputS.writeUTF(new String(rowInformation));
-                    rowInformation.delete(0, rowInformation.length() - 1);
+
+                    dataOutputS.writeUTF("EndOfTransmission");
                 }
-
-                dataOutputS.writeUTF("EndOfTransmission");
-
             } catch (SQLException | IOException e) {
                 e.printStackTrace();
             }

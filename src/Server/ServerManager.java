@@ -48,11 +48,7 @@ public class ServerManager {
                 connectionSocket = socketHearing.accept();
                 connectedClients++;
 
-                System.out.println("Client connected to the server application :" + connectedClients);
-                DataInputStream dis = new DataInputStream(connectionSocket.getInputStream());
-                DataOutputStream dos = new DataOutputStream(connectionSocket.getOutputStream());
-
-                allConnectedClients.add(new ClientHandler(dis, dos, connectionSocket, CommonLock, DataBase));
+                CreateClientHandler();
 
             } catch (IOException e) {
                 try {
@@ -66,6 +62,22 @@ public class ServerManager {
         System.out.println("Server Application Terminated");
     }
 
+    public void CreateClientHandler(){
+
+        try {
+            System.out.println("Client connected to the server application :" + connectedClients);
+            DataInputStream dis = new DataInputStream(connectionSocket.getInputStream());
+            DataOutputStream dos = new DataOutputStream(connectionSocket.getOutputStream());
+
+            ClientHandler cH = new ClientHandler(dis, dos, connectionSocket, CommonLock, DataBase);
+            cH.start();
+            allConnectedClients.add(cH);
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
     public void checkStatesOfCHandlers(){
         int i = 0;
 
@@ -75,11 +87,7 @@ public class ServerManager {
                 allConnectedClients.remove(i);
                 connectedClients--;
                 System.out.println("Waiting  for Clients to connect. Currently connected : " + connectedClients);
-             }
-            if(allConnectedClients.get(i).getState() == Thread.State.NEW) {
-                allConnectedClients.get(i).start();
-                i++;
-            }
+             }else i++;
         }
 
     }
