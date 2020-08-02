@@ -20,22 +20,26 @@ public class Client {
     public ArrayList<String> requestResource = new ArrayList<>();
 
     //this function run everything
-
-    public Client(String ip){
-
-        ipAddress = new String(ip);
+    public  void  executeClient(){
         connectToServerSocket();
         Scanner sc = new Scanner(System.in);
-
+        sc.next();
         while(!StopApp) {
 
             setUserRequest("select * from branch");
             sendRequestToHandler();
             getResourceFromHandler();
 
+            printReceivedResource();
+            clearBufferedResource();
             StopApp = sc.nextBoolean();
         }
         closeConnection();
+    }
+
+    public Client(String ip) {
+
+        ipAddress = new String(ip);
     }
 
     //worker methods
@@ -91,8 +95,20 @@ public class Client {
         UserRequest = userRequest;
     }
 
+    public void printReceivedResource(){
+        for(String s : requestResource) System.out.println(s);
+    }
 
+    public  void clearBufferedResource(){
+        requestResource.clear();
+        System.out.println("Ready for a new resource");
+    }
     public static void main(String[] args) {
+
+        Scanner sc = new Scanner(System.in);
+        int i = sc.nextInt();
+
         Client cl = new Client("127.0.0.1");
+        cl.executeClient();
     }
 }
