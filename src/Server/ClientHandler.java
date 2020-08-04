@@ -78,6 +78,11 @@ public class ClientHandler extends Thread {
     //TODO
     public void ClientEndsConnection(){
 
+        try {
+            HandlerOpen = !(dataInputS.readBoolean());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     //worker methods
@@ -91,7 +96,5 @@ public class ClientHandler extends Thread {
         }
 
     }
-
-    //TODO terminate client handler thread and close socket as soon as client disconnects
 
 }

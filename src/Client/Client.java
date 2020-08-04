@@ -41,9 +41,9 @@ public class Client {
             decideAboutTypeOfHandler();
 
             StopApp = sc.nextBoolean();
+            TellHandlerToEndConnection();
         }
 
-        TellHandlerToEndConnection();
         closeConnection();
 
     }
@@ -93,6 +93,11 @@ public class Client {
     }
     //TODO
     public void TellHandlerToEndConnection(){
+        try {
+            dataOutputS.writeBoolean(StopApp);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 
