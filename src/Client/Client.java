@@ -91,7 +91,7 @@ public class Client {
         System.out.println("Do you want to stop the app?");
 
     }
-    //TODO
+
     public void TellHandlerToEndConnection(){
         try {
             dataOutputS.writeBoolean(StopApp);

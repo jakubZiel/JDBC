@@ -75,7 +75,7 @@ public class ClientHandler extends Thread {
             e.printStackTrace();
         }
     }
-    //TODO
+
     public void ClientEndsConnection(){
 
         try {
