@@ -8,10 +8,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-
 
 public class ClientHandler extends Thread {
 
@@ -31,9 +27,21 @@ public class ClientHandler extends Thread {
 
         while(HandlerOpen) {
             getClientsRequest();
-            askDataBase();
-            sendResultToClient();
+
+            String RequestId = SqlRequest.substring(0,6);
+            RequestId.toLowerCase();
+
+            if(RequestId.equals("select")) {
+                CHandlerGet CHGet = new CHandlerGet(dataInputS, dataOutputS, connectionSocket, DataBaseRef, lock, SqlRequest);
+                CHGet.executeHandler();
+            }else if(RequestId.equals("delete") || RequestId.equals("update") || RequestId.equals("insert")){
+                CHandlerUpdate CHUpdate = new CHandlerUpdate(dataInputS, dataOutputS, connectionSocket, DataBaseRef, lock, SqlRequest);
+                CHUpdate.executeHandler();
+            }
+            System.gc();
+            ClientEndsConnection();
         }
+
         closeConnection();
     }
 
@@ -58,34 +66,6 @@ public class ClientHandler extends Thread {
             }
     }
 
-    public void askDataBase(){
-            try {
-                synchronized (DataBaseRef) {
-                    Statement statement = DataBaseRef.connectionToDataBase.createStatement();
-                    resultSet = statement.executeQuery(SqlRequest);
-                }
-            } catch (SQLException e) {
-                System.out.println(e.getMessage());
-                exceptionMessage = e.getMessage();
-                resultSet = null;
-            }
-    }
-
-    public void sendResultToClient(){
-
-         try {
-                synchronized (connectionSocket) {
-
-                    if(resultSet != null) sendDataThroughSocket();    //throws SQLException, IOException
-                    else dataOutputS.writeUTF(exceptionMessage);
-
-                    dataOutputS.writeUTF("EndOfTransmission");
-                }
-            } catch (SQLException | IOException e) {
-                e.printStackTrace();
-            }
-        }
-
     public void closeConnection(){
         try {
             dataInputS.close();
@@ -95,26 +75,12 @@ public class ClientHandler extends Thread {
             e.printStackTrace();
         }
     }
-
-    //worker methods
-
-    public void sendDataThroughSocket() throws SQLException, IOException {
-
-        StringBuffer rowInformation = new StringBuffer();
-        ResultSetMetaData metaData = resultSet.getMetaData();
-        int columns = metaData.getColumnCount();
-
-        while (resultSet.next()) {
-
-            for (int i = 1; i <= columns; i++) {
-                rowInformation.append(resultSet.getString(i));
-                rowInformation.append("###");
-            }
-            dataOutputS.writeUTF(new String(rowInformation));
-            rowInformation.delete(0, rowInformation.length());
-        }
+    //TODO
+    public void ClientEndsConnection(){
 
     }
+
+    //worker methods
 
     public void sleepFor2000ms() {
         try {
@@ -125,5 +91,7 @@ public class ClientHandler extends Thread {
         }
 
     }
+
+    //TODO terminate client handler thread and close socket as soon as client disconnects
 
 }

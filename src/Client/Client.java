@@ -12,8 +12,8 @@ public class Client {
     private Socket connectionSocket = null;
     private DataInputStream dataInputS;
     private DataOutputStream dataOutputS;
-    private int PortNumb = 6969;
-    private String ipAddress;
+    final private int PortNumb = 6969;
+    final private String ipAddress;
     private boolean StopApp = false;
     public User myUser;
     public String UserRequest;
@@ -25,7 +25,8 @@ public class Client {
         executeClient();
     }
 
-    //this function run everything
+    //this method run everything
+
     public  void  executeClient(){
 
         connectToServerSocket();
@@ -33,17 +34,20 @@ public class Client {
 
         while(!StopApp) {
 
-            setUserRequest("select b_id fr111om branch");
+            setUserRequest("select * from branch");
 
             sendRequestToHandler();
-            getResourceFromHandler();
 
-            printReceivedResource();
-            clearBufferedResource();
+            String requestId = UserRequest.substring(0,6);
+
+            decideAboutTypeOfHandler();
 
             StopApp = sc.nextBoolean();
         }
+
+        TellHandlerToEndConnection();
         closeConnection();
+
     }
 
     //major methods
@@ -75,7 +79,28 @@ public class Client {
         }
     }
 
-    public  void getResourceFromHandler(){
+    public void decideAboutTypeOfHandler(){
+
+        String requestId = UserRequest.substring(0,6);
+
+        if(requestId.equals("select")) {
+            getResourceFromHandlerGet();
+            printReceivedResource();
+            clearBufferedResource();
+        }else if(requestId.equals("delete") || requestId.equals("update") || requestId.equals("insert")) {
+            getResourceFromHandlerUpdate();
+        }else System.out.println("this type of operation hasn't been implemented yet");
+        System.out.println("Do you want to stop the app?");
+
+    }
+    //TODO
+    public void TellHandlerToEndConnection(){
+
+    }
+
+    //worker methods
+
+    public  void getResourceFromHandlerGet(){
 
         String buffer;
         try {
@@ -93,7 +118,6 @@ public class Client {
 
     public  void clearBufferedResource(){
         requestResource.clear();
-        System.out.println("Ready for a new resource");
     }
 
     public void closeConnection(){
@@ -108,7 +132,18 @@ public class Client {
 
     }
 
-    //worker methods
+    public  void getResourceFromHandlerUpdate(){
+        String buffer;
+
+        try {
+            while (!(buffer = dataInputS.readUTF()).equals("EndOfTransmission")) System.out.println(buffer);
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+
+    }
+
+
 
     public static void main(String[] args) {
 

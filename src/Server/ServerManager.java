@@ -19,6 +19,8 @@ public class ServerManager {
     DataBaseGetterClientSide DataBase = new DataBaseGetterClientSide();
     boolean StopServer = false;
 
+    //this method runs everything
+
     public ServerManager(int port){
         setServerToListenToPort(port);
         assignClientHandlersToClients();
