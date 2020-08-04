@@ -38,8 +38,6 @@ public class Client {
 
             sendRequestToHandler();
 
-            String requestId = UserRequest.substring(0,6);
-
             decideAboutTypeOfHandler();
 
             StopApp = sc.nextBoolean();
